@@ -1,0 +1,43 @@
+name: Deploy Website to AWS S3
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: |
+          echo "Running website tests..."
+          test -f index.html
+          test -f style.css
+          test -f script.js
+          echo "All required files are present."
+
+      - name: Build / Package
+        run: |
+          mkdir build
+          cp index.html build/
+          cp style.css build/
+          cp script.js build/
+          echo "Build completed."
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync build/ s3://devops-cicd-website-vinay.kumar-2026 --delete
